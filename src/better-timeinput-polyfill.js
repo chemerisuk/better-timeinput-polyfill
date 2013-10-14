@@ -3,9 +3,13 @@
 
     if ("orientation" in window) return; // skip mobile and tablet browsers
 
-    function createSelect(input, initialValue, template) {
-        return DOM.create(template)
-            .set(initialValue)
+    function createSelect(input, defaultValue, template) {
+        var el = DOM.create(template).set(defaultValue),
+            selected = el.children().filter(function(el) { return el.get() === defaultValue })[0];
+
+        if (selected) selected.legacy(function(node) { node.setAttribute("selected", "selected") });
+
+        return el
             .on("change", input, "handleSelectChange")
             .on("focus", input, "handleSelectFocus")
             .on("blur", input, "handleSelectBlur");
@@ -17,12 +21,11 @@
                 hoursSelect = createSelect(this, value[0], "select.better-timeinput-select>(option[value=$$@6]>{$$@6})*18+(option[value=$$@0]>{$$@0})*3"),
                 minutesSelect = createSelect(this, value[1], "select.better-timeinput-select>(option[value=$$@0]>{$$@0})*60");
 
-            // remove legacy dateinput if it exists
-            // also set tabindex=-1 because there are selects instead
+            // remove legacy dateinput
+            // set tabindex=-1 because there are selects instead
             this
                 .set({type: "text", autocomplete: "off", readonly: true, tabindex: "-1"})
                 .data({"hours-select": hoursSelect, "minutes-select": minutesSelect})
-                .on("focus", function() { hoursSelect.fire("focus") })
                 .addClass("better-timeinput")
                 .before(hoursSelect, minutesSelect);
         },
