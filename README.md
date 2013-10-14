@@ -17,7 +17,7 @@ Then append the following html elements on your page:
 <head>
     ...
     <!--[if IE]>
-        <link href="bower_components/better-dom/dist/better-dom.htc" rel="better-dom-htc" />
+        <link href="bower_components/better-dom/dist/better-dom.htc" rel="htc" />
         <script src="bower_components/html5shiv/dist/html5shiv.js"></script>
     <![endif]-->
 </head>
