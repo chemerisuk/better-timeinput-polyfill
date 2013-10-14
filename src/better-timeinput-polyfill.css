@@ -1,0 +1,23 @@
+.better-timeinput {
+    width: 5.5em;
+    text-align: center;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.better-timeinput-focus {
+    outline: -webkit-focus-ring-color auto 5px;
+    outline-offset: -2px;
+}
+
+.better-timeinput-select {
+    position: absolute;
+    opacity: 0;
+    width: 2.5em;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.better-timeinput-select + .better-timeinput-select {
+    margin-left: 3em;
+}

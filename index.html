@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>better-timeinput-polyfill demo</title>
+    <link href="src/better-timeinput-polyfill.css" rel="stylesheet"/>
+    <!--[if IE]>
+        <link href="bower_components/better-dom/dist/better-dom.htc" rel="better-dom-htc" />
+        <script src="bower_components/html5shiv/dist/html5shiv.js"></script>
+    <![endif]-->
+</head>
+<body>
+    <form action="">
+        <p>
+            <label>
+            Your name
+            <input type="text" required name="name">
+            </label>
+        </p>
+        <p>
+            <label>
+            Your time
+            <input type="time" name="birthdate" required>
+            </label>
+        </p>
+        <p>
+            <input type="checkbox" name="accept" required/>
+            <label>I accept site rules</label>
+        </p>
+        <button type="submit">Submit</button>
+    </form>
+    <script src="bower_components/better-dom/dist/better-dom.js"></script>
+    <script src="src/better-timeinput-polyfill.js"></script>
+</body>
+</html>
