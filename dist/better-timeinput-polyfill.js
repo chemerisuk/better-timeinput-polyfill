@@ -1,3 +1,11 @@
+/**
+ * @file better-timeinput-polyfill.js
+ * @version 0.9.6 2013-10-15T16:41:00
+ * @overview input[type=time] polyfill for better-dom
+ * @copyright Maksim Chemerisuk 2013
+ * @license MIT
+ * @see https://github.com/chemerisuk/better-timeinput-polyfill
+ */
 (function(DOM, undefined) {
     "use strict";
 

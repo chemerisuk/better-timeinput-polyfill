@@ -1,6 +1,6 @@
 {
     "name": "better-timeinput-polyfill",
-    "version": "0.9.5",
+    "version": "0.9.6",
     "main": [
         "dist/better-timeinput-polyfill.js"
     ],
@@ -13,6 +13,6 @@
         "better-dom"
     ],
     "dependencies": {
-        "better-dom": "~1.5.2"
+        "better-dom": "~1.5.3"
     }
 }
