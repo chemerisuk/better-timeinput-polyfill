@@ -4,13 +4,13 @@
     if ("orientation" in window) return; // skip mobile and tablet browsers
 
     var HOURS_KEY = "hours-select",
-        HOURS_TEMPLATE = DOM.template("select.better-timeinput-select>(option[value=$$@6]>{$$@6})*18+(option[value=$$@0]>{$$@0})*3"),
+        HOURS_TEMPLATE = DOM.template("select.better-timeinput-select>(option>{$$@6})*18+(option>{$$@0})*3"),
         MINUTES_KEY = "minutes-select",
-        MINUTES_TEMPLATE = DOM.template("select.better-timeinput-select>(option[value=00]>{00})+(option[value=05]>{05})+((option[value=$0]>{$0})+option[value=$5]>{$5})*5"),
+        MINUTES_TEMPLATE = DOM.template("select.better-timeinput-select>option>{00}^option>{05}^(option>{$0}^option>{$5})*5"),
         FOCUS_CLASS = "better-timeinput-focus";
 
-    function createSelect(input, key, defaultValue, template) {
-        var el = DOM.create(template).set("defaultValue", defaultValue);
+    function createSelect(input, key, template, defaultValue) {
+        var el = DOM.create(template, {defaultValue: defaultValue});
 
         input.data(key, el).before(el);
 
@@ -24,8 +24,8 @@
         constructor: function() {
             var value = this.get().split(":");
 
-            createSelect(this, HOURS_KEY, value[0], HOURS_TEMPLATE);
-            createSelect(this, MINUTES_KEY, value[1], MINUTES_TEMPLATE);
+            createSelect(this, HOURS_KEY, HOURS_TEMPLATE, value[0]);
+            createSelect(this, MINUTES_KEY, MINUTES_TEMPLATE, value[1]);
 
             // remove legacy dateinput
             // set tabindex=-1 because there are selects instead
@@ -59,5 +59,4 @@
             this.removeClass(FOCUS_CLASS);
         }
     });
-
 }(window.DOM));
