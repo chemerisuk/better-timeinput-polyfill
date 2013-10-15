@@ -31,8 +31,7 @@ module.exports = function(grunt) {
                 options: {
                     destination: "jsdoc",
                     template: "node_modules/ink-docstrap/template",
-                    configure: "extra/jsdoc.conf.json",
-                    tutorials: "extra/tutorials"
+                    configure: "extra/jsdoc.conf.json"
                 }
             }
         },
@@ -41,7 +40,7 @@ module.exports = function(grunt) {
                 configFile: "test/lib/karma.conf.js"
             },
             all: {
-                browsers: ["PhantomJS", "Chrome", "Opera", "Safari", "Firefox"],
+                browsers: ["PhantomJS", "Chrome", "ChromeCanary", "Opera", "Safari", "Firefox"],
                 singleRun: true
             },
             coverage: {
