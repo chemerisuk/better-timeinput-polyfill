@@ -3,11 +3,20 @@
 
     if ("orientation" in window) return; // skip mobile and tablet browsers
 
-    function createSelect(input, defaultValue, template) {
-        var el = DOM.create(template).set(defaultValue),
-            selected = el.children().filter(function(el) { return el.get() === defaultValue })[0];
+    var HOURS_KEY = "hours-select",
+        HOURS_TEMPLATE = DOM.template("select.better-timeinput-select>(option[value=$$@6]>{$$@6})*18+(option[value=$$@0]>{$$@0})*3"),
+        MINUTES_KEY = "minutes-select",
+        MINUTES_TEMPLATE = DOM.template("select.better-timeinput-select>(option[value=$$@0]>{$$@0})*60"),
+        FOCUS_CLASS = "better-timeinput-focus";
 
-        if (selected) selected.legacy(function(node) { node.setAttribute("selected", "selected") });
+    function createSelect(input, key, defaultValue, template) {
+        var el = DOM.create(template).set(defaultValue);
+
+        el.children().legacy(function(node, el) {
+            if (el.get("selected")) node.setAttribute("selected", "selected");
+        });
+
+        input.data(key, el).before(el);
 
         return el
             .on("change", input, "handleSelectChange")
@@ -17,29 +26,28 @@
 
     DOM.extend("input[type=time]", {
         constructor: function() {
-            var value = this.get().split(":"),
-                hoursSelect = createSelect(this, value[0], "select.better-timeinput-select>(option[value=$$@6]>{$$@6})*18+(option[value=$$@0]>{$$@0})*3"),
-                minutesSelect = createSelect(this, value[1], "select.better-timeinput-select>(option[value=$$@0]>{$$@0})*60");
+            var value = this.get().split(":");
+
+            createSelect(this, HOURS_KEY, value[0], HOURS_TEMPLATE);
+            createSelect(this, MINUTES_KEY, value[1], MINUTES_TEMPLATE);
 
             // remove legacy dateinput
             // set tabindex=-1 because there are selects instead
             this
                 .set({type: "text", autocomplete: "off", readonly: true, tabindex: "-1"})
-                .data({"hours-select": hoursSelect, "minutes-select": minutesSelect})
-                .addClass("better-timeinput")
-                .before(hoursSelect, minutesSelect);
+                .addClass("better-timeinput");
         },
         handleSelectChange: function(target) {
             this
-                .set(this.data("hours-select").get() + ":" + this.data("minutes-select").get())
+                .set(this.data(HOURS_KEY).get() + ":" + this.data(MINUTES_KEY).get())
                 .handleSelectFocus(target);
         },
         handleSelectFocus: function(target) {
-            var start = target === this.data("hours-select") ? 0 : 3,
-                end = target === this.data("hours-select") ? 2 : 5;
+            var start = target === this.data(HOURS_KEY) ? 0 : 3,
+                end = target === this.data(HOURS_KEY) ? 2 : 5;
 
             this
-                .addClass("better-timeinput-focus")
+                .addClass(FOCUS_CLASS)
                 .legacy(function(node) {
                     if (node.setSelectionRange) {
                         node.setSelectionRange(start, end);
@@ -50,7 +58,7 @@
                 });
         },
         handleSelectBlur: function() {
-            this.removeClass("better-timeinput-focus");
+            this.removeClass(FOCUS_CLASS);
         }
     });
 
