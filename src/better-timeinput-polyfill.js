@@ -6,15 +6,11 @@
     var HOURS_KEY = "hours-select",
         HOURS_TEMPLATE = DOM.template("select.better-timeinput-select>(option[value=$$@6]>{$$@6})*18+(option[value=$$@0]>{$$@0})*3"),
         MINUTES_KEY = "minutes-select",
-        MINUTES_TEMPLATE = DOM.template("select.better-timeinput-select>(option[value=$$@0]>{$$@0})*60"),
+        MINUTES_TEMPLATE = DOM.template("select.better-timeinput-select>(option[value=00]>{00})+(option[value=05]>{05})+((option[value=$0]>{$0})+option[value=$5]>{$5})*5"),
         FOCUS_CLASS = "better-timeinput-focus";
 
     function createSelect(input, key, defaultValue, template) {
-        var el = DOM.create(template).set(defaultValue);
-
-        el.children().legacy(function(node, el) {
-            if (el.get("selected")) node.setAttribute("selected", "selected");
-        });
+        var el = DOM.create(template).set("defaultValue", defaultValue);
 
         input.data(key, el).before(el);
 
@@ -36,6 +32,8 @@
             this
                 .set({type: "text", autocomplete: "off", readonly: true, tabindex: "-1"})
                 .addClass("better-timeinput");
+
+            if (this.matches(":focus")) this.data(HOURS_KEY).fire("focus");
         },
         handleSelectChange: function(target) {
             this
