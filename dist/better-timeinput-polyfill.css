@@ -1,0 +1,31 @@
+/**
+ * @file better-timeinput-polyfill.css
+ * @version 0.9.6 2013-10-15T16:41:00
+ * @overview input[type=time] polyfill for better-dom
+ * @copyright Maksim Chemerisuk 2013
+ * @license MIT
+ * @see https://github.com/chemerisuk/better-timeinput-polyfill
+ */
+.better-timeinput {
+    width: 5.5em;
+    text-align: center;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.better-timeinput-focus {
+    outline: -webkit-focus-ring-color auto 5px;
+    outline-offset: -2px;
+}
+
+.better-timeinput-select {
+    position: absolute;
+    opacity: 0;
+    width: 2.5em;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.better-timeinput-select + .better-timeinput-select {
+    margin-left: 3em;
+}
