@@ -10,7 +10,7 @@
     width: 3em;
     position: absolute;
     opacity: 0;
-    -ms-filter: alpha(opacity=0);
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
 }
 
 .better-timeinput-select + .better-timeinput-select {
