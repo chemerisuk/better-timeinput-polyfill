@@ -2,7 +2,8 @@
     "name": "better-timeinput-polyfill",
     "version": "0.9.6",
     "main": [
-        "dist/better-timeinput-polyfill.js"
+        "dist/better-timeinput-polyfill.js",
+        "dist/better-timeinput-polyfill.css"
     ],
     "ignore": [
         ".*",

@@ -40,15 +40,18 @@
         },
         handleSelectFocus: function(target) {
             var isHoursFocused = target === this.data(HOURS_KEY),
-                start = isHoursFocused ? 0 : 3,
-                end = isHoursFocused ? 2 : 5;
+                start = isHoursFocused ? 0 : 3;
 
             this.legacy(function(node) {
-                if (node.setSelectionRange) {
-                    node.setSelectionRange(start, end);
-                } else if (node.selectionStart !== undefined) {
+                if ("selectionStart" in node) {
                     node.selectionStart = start;
-                    node.selectionEnd = end;
+                    node.selectionEnd = isHoursFocused ? 2 : 5;
+                } else {
+                    var range = node.createTextRange();
+                    range.moveStart("character", start);
+                    range.collapse();
+                    range.moveEnd("character", 2);
+                    range.select();
                 }
             });
         }
