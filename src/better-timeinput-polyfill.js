@@ -18,7 +18,7 @@
     }
 
     DOM.extend("input[type=time]", "orientation" in window ? function() { this.addClass(COMPONENT_CLASS) } : {
-        // polyfill element for desktop browsers
+        // polyfill for desktop browsers
         constructor: function() {
             var value = this.get().split(":");
 
