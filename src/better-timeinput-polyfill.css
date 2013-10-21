@@ -1,6 +1,7 @@
 .better-timeinput {
     width: 6em;
     text-align: center;
+    /* for mobile browsers */
     -webkit-appearance: none;
     border-radius: 0;
 }
@@ -16,6 +17,7 @@
     margin-left: 3em;
 }
 
+/* just copied default focus indication from Chrome */
 .better-timeinput-select:focus ~ .better-timeinput {
     outline: -webkit-focus-ring-color auto 5px;
     outline-offset: -2px;
