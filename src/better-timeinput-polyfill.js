@@ -43,9 +43,8 @@
                 start = isHoursFocused ? 0 : 3;
 
             this.legacy(function(node) {
-                if ("selectionStart" in node) {
-                    node.selectionStart = start;
-                    node.selectionEnd = isHoursFocused ? 2 : 5;
+                if ("setSelectionRange" in node) {
+                    node.setSelectionRange(start, isHoursFocused ? 2 : 5);
                 } else {
                     var range = node.createTextRange();
                     range.moveStart("character", start);
