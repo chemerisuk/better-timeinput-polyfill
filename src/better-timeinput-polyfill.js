@@ -1,37 +1,35 @@
 (function(DOM, undefined) {
     "use strict";
 
-    if ("orientation" in window) return; // skip mobile and tablet browsers
-
     var HOURS_KEY = "hours-select",
-        HOURS_TEMPLATE = DOM.template("select.better-timeinput-select>(option[value=$$@6]>{$$@6})*18+(option[value=$$@0]>{$$@0})*3"),
+        HOURS_TEMPLATE = DOM.template("select.better-timeinput-select>(option>{$$@6})*18+(option>{$$@0})*6"),
         MINUTES_KEY = "minutes-select",
-        MINUTES_TEMPLATE = DOM.template("select.better-timeinput-select>(option[value=00]>{00})+(option[value=05]>{05})+((option[value=$0]>{$0})+option[value=$5]>{$5})*5"),
-        FOCUS_CLASS = "better-timeinput-focus";
+        MINUTES_TEMPLATE = DOM.template("select.better-timeinput-select>option>{00}^option>{05}^(option>{$0}^option>{$5})*5"),
+        COMPONENT_CLASS = "better-timeinput";
 
-    function createSelect(input, key, defaultValue, template) {
-        var el = DOM.create(template).set("defaultValue", defaultValue);
+    function createSelect(input, key, template, defaultValue) {
+        var el = DOM.create(template, {defaultValue: defaultValue});
 
         input.data(key, el).before(el);
 
         return el
             .on("change", input, "handleSelectChange")
-            .on("focus", input, "handleSelectFocus")
-            .on("blur", input, "handleSelectBlur");
+            .on("focus", input, "handleSelectFocus");
     }
 
-    DOM.extend("input[type=time]", {
+    DOM.extend("input[type=time]", "orientation" in window ? function() { this.addClass(COMPONENT_CLASS) } : {
+        // polyfill for desktop browsers
         constructor: function() {
             var value = this.get().split(":");
 
-            createSelect(this, HOURS_KEY, value[0], HOURS_TEMPLATE);
-            createSelect(this, MINUTES_KEY, value[1], MINUTES_TEMPLATE);
+            createSelect(this, HOURS_KEY, HOURS_TEMPLATE, value[0]);
+            createSelect(this, MINUTES_KEY, MINUTES_TEMPLATE, value[1]);
 
-            // remove legacy dateinput
-            // set tabindex=-1 because there are selects instead
+            // 1. remove legacy dateinput
+            // 2. set tabindex=-1 because there are hidden selects instead
             this
-                .set({type: "text", autocomplete: "off", readonly: true, tabindex: "-1"})
-                .addClass("better-timeinput");
+                .set({type: "text", autocomplete: "off", readonly: true, tabindex: -1})
+                .addClass(COMPONENT_CLASS);
 
             if (this.matches(":focus")) this.data(HOURS_KEY).fire("focus");
         },
@@ -41,23 +39,20 @@
                 .handleSelectFocus(target);
         },
         handleSelectFocus: function(target) {
-            var start = target === this.data(HOURS_KEY) ? 0 : 3,
-                end = target === this.data(HOURS_KEY) ? 2 : 5;
+            var isHoursFocused = target === this.data(HOURS_KEY),
+                start = isHoursFocused ? 0 : 3;
 
-            this
-                .addClass(FOCUS_CLASS)
-                .legacy(function(node) {
-                    if (node.setSelectionRange) {
-                        node.setSelectionRange(start, end);
-                    } else if (node.selectionStart !== undefined) {
-                        node.selectionStart = start;
-                        node.selectionEnd = end;
-                    }
-                });
-        },
-        handleSelectBlur: function() {
-            this.removeClass(FOCUS_CLASS);
+            this.legacy(function(node) {
+                if ("setSelectionRange" in node) {
+                    node.setSelectionRange(start, isHoursFocused ? 2 : 5);
+                } else {
+                    var range = node.createTextRange();
+                    range.moveStart("character", start);
+                    range.collapse();
+                    range.moveEnd("character", 2);
+                    range.select();
+                }
+            });
         }
     });
-
 }(window.DOM));

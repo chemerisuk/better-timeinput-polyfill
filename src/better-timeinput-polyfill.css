@@ -1,23 +1,30 @@
 .better-timeinput {
-    width: 5.5em;
+    width: 6em;
     text-align: center;
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
-}
-
-.better-timeinput-focus {
-    outline: -webkit-focus-ring-color auto 5px;
-    outline-offset: -2px;
+    /* for mobile browsers */
+    -webkit-appearance: none;
+    border-radius: 0;
 }
 
 .better-timeinput-select {
+    width: 3em;
     position: absolute;
     opacity: 0;
-    width: 2.5em;
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
 }
 
 .better-timeinput-select + .better-timeinput-select {
     margin-left: 3em;
+}
+
+/* just copied default focus indication from Chrome */
+.better-timeinput-select:focus ~ .better-timeinput {
+    outline: -webkit-focus-ring-color auto 5px;
+    outline-offset: -2px;
+}
+
+.better-timeinput,
+.better-timeinput-select {
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
 }
