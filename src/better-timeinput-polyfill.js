@@ -2,7 +2,7 @@
     "use strict";
 
     var HOURS_KEY = "hours-select",
-        HOURS_TEMPLATE = DOM.template("select.better-timeinput-select>(option>{$$@6})*18+(option>{$$@0})*3"),
+        HOURS_TEMPLATE = DOM.template("select.better-timeinput-select>(option>{$$@6})*18+(option>{$$@0})*6"),
         MINUTES_KEY = "minutes-select",
         MINUTES_TEMPLATE = DOM.template("select.better-timeinput-select>option>{00}^option>{05}^(option>{$0}^option>{$5})*5"),
         COMPONENT_CLASS = "better-timeinput";
