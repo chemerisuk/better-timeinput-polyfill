@@ -1,9 +1,6 @@
 .better-timeinput {
     width: 6em;
     text-align: center;
-    /* for mobile browsers */
-    -webkit-appearance: none;
-    border-radius: 0;
 }
 
 .better-timeinput-select {
