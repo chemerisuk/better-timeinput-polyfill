@@ -2,26 +2,3 @@
     width: 6em;
     text-align: center;
 }
-
-.better-timeinput-select {
-    width: 3em;
-    position: absolute;
-    opacity: 0;
-    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
-}
-
-.better-timeinput-select + .better-timeinput-select {
-    margin-left: 3em;
-}
-
-/* just copied default focus indication from Chrome */
-.better-timeinput-select:focus ~ .better-timeinput {
-    outline: -webkit-focus-ring-color auto 5px;
-    outline-offset: -2px;
-}
-
-.better-timeinput,
-.better-timeinput-select {
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
-}
