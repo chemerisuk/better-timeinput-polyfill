@@ -3,7 +3,7 @@
 
     var AMPM = DOM.find("html").get("lang") === "en-US",
         TIME_KEY = "time-input",
-        AMPM_KEY = "ampm-select",
+        AMPM_KEY = "time-median",
         COMPONENT_CLASS = "better-timeinput",
         timeparts = function(str) {
             str = str.split(":");
@@ -22,8 +22,8 @@
     DOM.extend("input[type=time]", "orientation" in window ? function() { this.addClass(COMPONENT_CLASS) } : {
         // polyfill for desktop browsers
         constructor: function() {
-            var timeinput = DOM.create("input[maxlength=5]", {"class": COMPONENT_CLASS}),
-                ampmspan = AMPM ? DOM.create("span>(select>option>{AM}^option>{PM})+span", {"class": COMPONENT_CLASS + "-select"}) : DOM.mock();
+            var timeinput = DOM.create("input[maxlength=5]." + COMPONENT_CLASS, {defaulValue: this.get()}),
+                ampmspan = AMPM ? DOM.create("span." + COMPONENT_CLASS + "-meridian>(select>option>{AM}^option>{PM})+span") : DOM.mock();
 
             this.hide()
                 .after(ampmspan, timeinput)
@@ -31,46 +31,54 @@
                 .data(AMPM_KEY, ampmspan.child(0));
 
             timeinput
-                .on("keydown", ["which"], this, "handleTimeinputKeydown")
-                .on("change", this, "handleTimeinputChange");
+                .on("keydown", ["which", "shiftKey"], this, "handleTimeInputKeydown")
+                .on("change", this, "handleTimeInputChange");
 
-            ampmspan.child(0).on("change", this, "handleAMPMChange");
+            ampmspan.child(0).on("change", this, "handleTimeMeridianChange");
 
             // TODO: handle required attribute somehow
 
-            if (this.get()) this.handleTimeinputChange(timeinput);
+            if (this.get()) {
+                this.handleTimeInputChange(timeinput);
+
+                timeinput.set("defaulValue", timeinput.get());
+                // defaultValue fix: dunno why it doesn't work
+                this.parent("form").on("reset", function() {
+                    setTimeout(function() {
+                        timeinput.set(timeinput.get("defaulValue"));
+                    }, 50);
+                });
+            }
+
             if (this.matches(":focus")) timeinput.fire("focus");
         },
-        handleTimeinputKeydown: function(which) {
-            return which === 186 || which < 58;
+        handleTimeInputKeydown: function(which, shiftKey) {
+            return which === 186 && shiftKey || which < 58;
         },
-        handleTimeinputChange: function(target) {
+        handleTimeInputChange: function(target) {
             var ampmselect = this.data(AMPM_KEY),
                 parts = timeparts(target.get()),
                 hours = parts[0],
                 minutes = parts[1];
 
-            if (typeof hours === "number" && ampmselect.get() === "PM") {
-                hours += 12;
-            }
-
-            if (hours < 24 && minutes < 60) {
+            if (hours < (ampmselect.length ? 12 : 24) && minutes < 60) {
                 this.set(zeropad(hours) + ":" + zeropad(minutes));
-                target.set(hours + ":" + zeropad(minutes));
             } else {
+                // restore previous valid
                 parts = timeparts(this.get());
                 hours = parts[0];
+                minutes = parts[1];
 
                 ampmselect.each(function(el) {
                     el.child((hours -= 12) > 0 ? 1 : Math.min(hours += 12, 0)).set("selected", true);
                 });
 
-                this.handleAMPMChange(ampmselect);
-
-                target.set(hours + ":" + zeropad(parts[1]));
+                this.handleTimeMeridianChange(ampmselect);
             }
+
+            target.set(hours + ":" + zeropad(minutes));
         },
-        handleAMPMChange: function(select) {
+        handleTimeMeridianChange: function(select) {
             select.next().set(select.get());
         }
     });

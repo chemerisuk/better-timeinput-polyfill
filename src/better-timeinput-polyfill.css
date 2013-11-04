@@ -1,37 +1,39 @@
 .better-timeinput {
-    width: 6em;
+    width: 4em;
     text-align: center;
 }
 
-.better-timeinput-select {
+.better-timeinput-meridian {
     width: 3em;
-    vertical-align: middle;
     position: relative;
     display: inline-block;
 }
 
-.better-timeinput-select:after {
+.better-timeinput-meridian:after {
     content: "\25BE";
     position: absolute;
     right: 0;
 }
 
-.better-timeinput-select > span {
+.better-timeinput-meridian > span {
     display: inline-block;
     width: 100%;
     text-align: center;
 }
 
-.better-timeinput-select > select {
+.better-timeinput-meridian > select {
     opacity: 0;
     position: absolute;
     left: 0;
     top: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0;
     z-index: 1;
 }
 
 /* just copied default focus indication from Chrome */
-.better-timeinput-select > select:focus + span {
+.better-timeinput-meridian > select:focus + span {
     outline: -webkit-focus-ring-color auto 5px;
     outline-offset: -2px;
 }
