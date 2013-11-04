@@ -2,3 +2,36 @@
     width: 6em;
     text-align: center;
 }
+
+.better-timeinput-select {
+    width: 3em;
+    vertical-align: middle;
+    position: relative;
+    display: inline-block;
+}
+
+.better-timeinput-select:after {
+    content: "\25BE";
+    position: absolute;
+    right: 0;
+}
+
+.better-timeinput-select > span {
+    display: inline-block;
+    width: 100%;
+    text-align: center;
+}
+
+.better-timeinput-select > select {
+    opacity: 0;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 1;
+}
+
+/* just copied default focus indication from Chrome */
+.better-timeinput-select > select:focus + span {
+    outline: -webkit-focus-ring-color auto 5px;
+    outline-offset: -2px;
+}

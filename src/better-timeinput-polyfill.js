@@ -23,16 +23,18 @@
         // polyfill for desktop browsers
         constructor: function() {
             var timeinput = DOM.create("input[maxlength=5]", {"class": COMPONENT_CLASS}),
-                ampmselect = AMPM ? DOM.create("select>option>{AM}^option>{PM}", {"class": COMPONENT_CLASS + "-select"}) : DOM.mock();
+                ampmspan = AMPM ? DOM.create("span>(select>option>{AM}^option>{PM})+span", {"class": COMPONENT_CLASS + "-select"}) : DOM.mock();
 
             this.hide()
-                .after(ampmselect, timeinput)
+                .after(ampmspan, timeinput)
                 .data(TIME_KEY, timeinput)
-                .data(AMPM_KEY, ampmselect);
+                .data(AMPM_KEY, ampmspan.child(0));
 
             timeinput
                 .on("keydown", ["which"], this, "handleTimeinputKeydown")
                 .on("change", this, "handleTimeinputChange");
+
+            ampmspan.child(0).on("change", this, "handleAMPMChange");
 
             // TODO: handle required attribute somehow
 
@@ -54,17 +56,22 @@
 
             if (hours < 24 && minutes < 60) {
                 this.set(zeropad(hours) + ":" + zeropad(minutes));
+                target.set(hours + ":" + zeropad(minutes));
             } else {
                 parts = timeparts(this.get());
                 hours = parts[0];
-                minutes = parts[1];
 
                 ampmselect.each(function(el) {
-                    el.child((hours -= 12) > 0 ? 1 : (hours += 12) || 0).set("selected", true);
+                    el.child((hours -= 12) > 0 ? 1 : Math.min(hours += 12, 0)).set("selected", true);
                 });
 
-                target.set(hours + ":" + minutes);
+                this.handleAMPMChange(ampmselect);
+
+                target.set(hours + ":" + zeropad(parts[1]));
             }
+        },
+        handleAMPMChange: function(select) {
+            select.next().set(select.get());
         }
     });
 }(window.DOM));
