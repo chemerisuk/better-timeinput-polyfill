@@ -7,40 +7,22 @@ describe("better-timeinput-polyfill", function() {
         el = DOM.mock("form>input[type=time]").find("input");
     });
 
-    it("should create two selects in constructor", function() {
-        expect(el.data("hours-select").matches("select")).toBe(true);
-        expect(el.data("minutes-select").matches("select")).toBe(true);
-    });
+    it("should block input of all chars except numbers and controls", function() {
+        function checkKey(key, shiftKey, expected) {
+            expect(el.handleTimeInputKeydown(key, shiftKey)).toBe(expected);
+        }
 
-    it("should cancel native behavior, focus and autocomplete", function() {
-        expect(el.get("type")).toBe("text");
-        expect(el.get("autocomplete")).toBe("off");
-        expect(el.get("tabindex")).toBe("-1");
-    });
+        checkKey(9,  false, true);    // tab
+        checkKey(37, false, true);    // left
+        checkKey(38, false, true);    // up
+        checkKey(39, false, true);    // right
+        checkKey(40, false, true);    // down
+        checkKey(186, true, true);    // ':'
+        checkKey(186, false, false);  // ';'
 
-    it("should append custom class", function() {
-        expect(el.hasClass("better-timeinput")).toBe(true);
-    });
-
-    it("should sync input value on each select change", function() {
-        var hoursGetSpy = spyOn(el.data("hours-select"), "get").andReturn("10"),
-            minutesGetSpy = spyOn(el.data("minutes-select"), "get").andReturn("15");
-
-        el.handleSelectChange(el.data("hours-select"));
-        expect(hoursGetSpy).toHaveBeenCalled();
-        expect(minutesGetSpy).toHaveBeenCalled();
-        expect(el.get()).toBe("10:15");
-    });
-
-    it("should sync selection on each select focus", function() {
-        el.legacy(function(node) {
-            var selectionRangeSpy = spyOn(node, "setSelectionRange");
-
-            el.handleSelectFocus(el.data("hours-select"));
-            expect(selectionRangeSpy).toHaveBeenCalledWith(0, 2);
-
-            el.handleSelectFocus(el.data("minutes-select"));
-            expect(selectionRangeSpy).toHaveBeenCalledWith(3, 5);
-        });
+        checkKey(65, false, false);   // 'a'
+        checkKey(90, false, false);   // 'z'
+        checkKey(65, true, false);    // 'A'
+        checkKey(90, true, false);    // 'Z'
     });
 });

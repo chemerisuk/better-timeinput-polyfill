@@ -1,57 +1,92 @@
 (function(DOM, undefined) {
     "use strict";
 
-    var HOURS_KEY = "hours-select",
-        HOURS_TEMPLATE = DOM.template("select.better-timeinput-select>(option>{$$@6})*18+(option>{$$@0})*6"),
-        MINUTES_KEY = "minutes-select",
-        MINUTES_TEMPLATE = DOM.template("select.better-timeinput-select>option>{00}^option>{05}^(option>{$0}^option>{$5})*5"),
-        COMPONENT_CLASS = "better-timeinput";
+    var AMPM = DOM.find("html").get("lang") === "en-US",
+        TIME_KEY = "time-input",
+        AMPM_KEY = "time-median",
+        COMPONENT_CLASS = "better-timeinput",
+        timeparts = function(str) {
+            str = str.split(":");
 
-    function createSelect(input, key, template, defaultValue) {
-        var el = DOM.create(template, {defaultValue: defaultValue});
+            if (str.length === 2) {
+                str[0] = parseFloat(str[0]);
+                str[1] = parseFloat(str[1]);
+            } else {
+                str = [];
+            }
 
-        input.data(key, el).before(el);
-
-        return el
-            .on("change", input, "handleSelectChange")
-            .on("focus", input, "handleSelectFocus");
-    }
+            return str;
+        },
+        zeropad = function(value) { return ("00" + value).slice(-2) };
 
     DOM.extend("input[type=time]", "orientation" in window ? function() { this.addClass(COMPONENT_CLASS) } : {
-        // polyfill for desktop browsers
+        // polyfill timeinput for desktop browsers
         constructor: function() {
-            var value = this.get().split(":");
+            var timeinput = DOM.create("input[type=hidden]", {name: this.get("name"), value: this.get() }),
+                ampmspan = AMPM ? DOM.create("span." + COMPONENT_CLASS + "-meridian>(select>option>{AM}^option>{PM})+span>{AM}") : DOM.mock(),
+                ampmselect = ampmspan.child(0);
 
-            createSelect(this, HOURS_KEY, HOURS_TEMPLATE, value[0]);
-            createSelect(this, MINUTES_KEY, MINUTES_TEMPLATE, value[1]);
-
-            // 1. remove legacy dateinput
-            // 2. set tabindex=-1 because there are hidden selects instead
             this
-                .set({type: "text", autocomplete: "off", readonly: true, tabindex: -1})
-                .addClass(COMPONENT_CLASS);
+                // drop native implementation and clear name attribute
+                .set({type: "text", maxlength: 5, name: null})
+                .addClass(COMPONENT_CLASS)
+                .after(ampmspan, timeinput)
+                .data(TIME_KEY, timeinput)
+                .data(AMPM_KEY, ampmselect)
+                .on("keydown", ["which", "shiftKey"], this.handleTimeInputKeydown)
+                .on("change", this.handleTimeInputChange)
+                .handleTimeInputChange();
 
-            if (this.matches(":focus")) this.data(HOURS_KEY).fire("focus");
-        },
-        handleSelectChange: function(target) {
-            this
-                .set(this.data(HOURS_KEY).get() + ":" + this.data(MINUTES_KEY).get())
-                .handleSelectFocus(target);
-        },
-        handleSelectFocus: function(target) {
-            var isHoursFocused = target === this.data(HOURS_KEY),
-                start = isHoursFocused ? 0 : 3;
+            ampmselect.on("change", this, "handleTimeMeridianChange");
+            // update value correctly on form reset
+            this.parent("form").on("reset", this, function() {
+                setTimeout((function(el) {
+                    return function() {
+                        timeinput.set(el.get());
+                        el.handleTimeInputChange();
+                    };
+                }(this)), 0);
+            });
 
-            this.legacy(function(node) {
-                if ("setSelectionRange" in node) {
-                    node.setSelectionRange(start, isHoursFocused ? 2 : 5);
-                } else {
-                    var range = node.createTextRange();
-                    range.moveStart("character", start);
-                    range.collapse();
-                    range.moveEnd("character", 2);
-                    range.select();
-                }
+            if (this.matches(":focus")) timeinput.fire("focus");
+        },
+        handleTimeInputKeydown: function(which, shiftKey) {
+            return which === 186 && shiftKey || which < 58;
+        },
+        handleTimeInputChange: function() {
+            var ampmselect = this.data(AMPM_KEY),
+                timeinput = this.data(TIME_KEY),
+                parts = timeparts(this.get()),
+                hours = parts[0],
+                minutes = parts[1];
+
+            if (!parts.length) return timeinput.set("");
+
+            if (hours < (ampmselect.length ? 13 : 24) && minutes < 60) {
+                timeinput.set(zeropad(ampmselect.get() === "PM" ? hours + 12 : hours) + ":" + zeropad(minutes));
+            } else {
+                // restore previous valid
+                parts = timeparts(timeinput.get());
+                hours = parts[0];
+                minutes = parts[1];
+                // select appropriate AM/PM
+                ampmselect.child((hours -= 12) > 0 ? 1 : Math.min(hours += 12, 0)).set("selected", true);
+                // update displayed AM/PM
+                ampmselect.next().set(ampmselect.get());
+            }
+
+            this.set(hours + ":" + zeropad(minutes));
+        },
+        handleTimeMeridianChange: function(ampmselect) {
+            // update displayed AM/PM
+            ampmselect.next().set(ampmselect.get());
+            // adjust time in hidden input
+            this.data(TIME_KEY).set(function(value) {
+                var parts = timeparts(value),
+                    hours = parts[0],
+                    minutes = parts[1];
+
+                return zeropad(ampmselect.get() === "PM" ? hours + 12 : hours - 12) + ":" + zeropad(minutes);
             });
         }
     });

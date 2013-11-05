@@ -1,38 +1,47 @@
 /**
  * @file better-timeinput-polyfill.css
- * @version 1.0.0 2013-10-25T20:45:56
+ * @version 1.1.0-beta.1 2013-11-05T10:59:21
  * @overview input[type=time] polyfill for better-dom
  * @copyright Maksim Chemerisuk 2013
  * @license MIT
  * @see https://github.com/chemerisuk/better-timeinput-polyfill
  */
 .better-timeinput {
-    width: 6em;
+    width: 4em;
     text-align: center;
-    /* for mobile browsers */
-    -webkit-appearance: none;
-    border-radius: 0;
 }
 
-.better-timeinput-select {
+.better-timeinput-meridian {
     width: 3em;
-    position: absolute;
-    opacity: 0;
-    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+    position: relative;
+    display: inline-block;
 }
 
-.better-timeinput-select + .better-timeinput-select {
-    margin-left: 3em;
+.better-timeinput-meridian:after {
+    content: "\25BE";
+    position: absolute;
+    right: 0;
+}
+
+.better-timeinput-meridian > span {
+    display: inline-block;
+    width: 100%;
+    text-align: center;
+}
+
+.better-timeinput-meridian > select {
+    opacity: 0;
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0;
+    z-index: 1;
 }
 
 /* just copied default focus indication from Chrome */
-.better-timeinput-select:focus ~ .better-timeinput {
+.better-timeinput-meridian > select:focus + span {
     outline: -webkit-focus-ring-color auto 5px;
     outline-offset: -2px;
-}
-
-.better-timeinput,
-.better-timeinput-select {
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
 }
