@@ -22,26 +22,22 @@
     DOM.extend("input[type=time]", "orientation" in window ? function() { this.addClass(COMPONENT_CLASS) } : {
         // polyfill for desktop browsers
         constructor: function() {
-            var timeinput = DOM.create("input[maxlength=5]." + COMPONENT_CLASS, {defaulValue: this.get()}),
+            var timeinput = DOM.create("input[type=hidden]", {name: this.get("name"), value: this.get() }),
                 ampmspan = AMPM ? DOM.create("span." + COMPONENT_CLASS + "-meridian>(select>option>{AM}^option>{PM})+span") : DOM.mock();
 
-            this.hide()
+            this
+                .set({type: "text", maxlength: 5, name: null})
+                .addClass(COMPONENT_CLASS)
                 .after(ampmspan, timeinput)
                 .data(TIME_KEY, timeinput)
-                .data(AMPM_KEY, ampmspan.child(0));
-
-            timeinput
-                .on("keydown", ["which", "shiftKey"], this, "handleTimeInputKeydown")
-                .on("change", this, "handleTimeInputChange");
+                .data(AMPM_KEY, ampmspan.child(0))
+                .on("keydown", ["which", "shiftKey"], this.handleTimeInputKeydown)
+                .on("change", this.handleTimeInputChange);
 
             ampmspan.child(0).on("change", this, "handleTimeMeridianChange");
 
-            // TODO: handle required attribute somehow
-
             if (this.get()) {
-                this.handleTimeInputChange(timeinput);
-
-                timeinput.set("defaulValue", timeinput.get());
+                this.handleTimeInputChange();
                 // defaultValue fix: dunno why it doesn't work
                 this.parent("form").on("reset", function() {
                     setTimeout(function() {
@@ -55,31 +51,41 @@
         handleTimeInputKeydown: function(which, shiftKey) {
             return which === 186 && shiftKey || which < 58;
         },
-        handleTimeInputChange: function(target) {
+        handleTimeInputChange: function() {
             var ampmselect = this.data(AMPM_KEY),
-                parts = timeparts(target.get()),
+                timeinput = this.data(TIME_KEY),
+                parts = timeparts(this.get()),
                 hours = parts[0],
                 minutes = parts[1];
 
-            if (hours < (ampmselect.length ? 12 : 24) && minutes < 60) {
-                this.set(zeropad(hours) + ":" + zeropad(minutes));
+            if (parts.length === 0) return timeinput.set("");
+
+            if (hours < (ampmselect.length ? 13 : 24) && minutes < 60) {
+                timeinput.set(zeropad(ampmselect.get() === "PM" ? hours + 12 : hours) + ":" + zeropad(minutes));
             } else {
                 // restore previous valid
-                parts = timeparts(this.get());
+                parts = timeparts(timeinput.get());
                 hours = parts[0];
                 minutes = parts[1];
 
-                ampmselect.each(function(el) {
-                    el.child((hours -= 12) > 0 ? 1 : Math.min(hours += 12, 0)).set("selected", true);
-                });
-
-                this.handleTimeMeridianChange(ampmselect);
+                ampmselect.child((hours -= 12) > 0 ? 1 : Math.min(hours += 12, 0)).set("selected", true);
+                ampmselect.next().set(ampmselect.get());
             }
 
-            target.set(hours + ":" + zeropad(minutes));
+            this.set(hours + ":" + zeropad(minutes));
         },
-        handleTimeMeridianChange: function(select) {
-            select.next().set(select.get());
+        handleTimeMeridianChange: function(ampmselect) {
+            ampmselect.next().set(ampmselect.get());
+
+            this.data(TIME_KEY).set(function(value) {
+                var parts = timeparts(value),
+                    hours = parts[0],
+                    minutes = parts[1];
+
+                hours += ampmselect.get() === "PM" ? 12 : -12;
+
+                return zeropad(hours) + ":" + zeropad(minutes);
+            });
         }
     });
 }(window.DOM));
