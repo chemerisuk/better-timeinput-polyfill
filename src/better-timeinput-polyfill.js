@@ -20,31 +20,33 @@
         zeropad = function(value) { return ("00" + value).slice(-2) };
 
     DOM.extend("input[type=time]", "orientation" in window ? function() { this.addClass(COMPONENT_CLASS) } : {
-        // polyfill for desktop browsers
+        // polyfill timeinput for desktop browsers
         constructor: function() {
             var timeinput = DOM.create("input[type=hidden]", {name: this.get("name"), value: this.get() }),
-                ampmspan = AMPM ? DOM.create("span." + COMPONENT_CLASS + "-meridian>(select>option>{AM}^option>{PM})+span") : DOM.mock();
+                ampmspan = AMPM ? DOM.create("span." + COMPONENT_CLASS + "-meridian>(select>option>{AM}^option>{PM})+span>{AM}") : DOM.mock(),
+                ampmselect = ampmspan.child(0);
 
             this
+                // drop native implementation and clear name attribute
                 .set({type: "text", maxlength: 5, name: null})
                 .addClass(COMPONENT_CLASS)
                 .after(ampmspan, timeinput)
                 .data(TIME_KEY, timeinput)
-                .data(AMPM_KEY, ampmspan.child(0))
+                .data(AMPM_KEY, ampmselect)
                 .on("keydown", ["which", "shiftKey"], this.handleTimeInputKeydown)
-                .on("change", this.handleTimeInputChange);
+                .on("change", this.handleTimeInputChange)
+                .handleTimeInputChange();
 
-            ampmspan.child(0).on("change", this, "handleTimeMeridianChange");
-
-            if (this.get()) {
-                this.handleTimeInputChange();
-                // defaultValue fix: dunno why it doesn't work
-                this.parent("form").on("reset", function() {
-                    setTimeout(function() {
-                        timeinput.set(timeinput.get("defaulValue"));
-                    }, 50);
-                });
-            }
+            ampmselect.on("change", this, "handleTimeMeridianChange");
+            // update value correctly on form reset
+            this.parent("form").on("reset", this, function() {
+                setTimeout((function(el) {
+                    return function() {
+                        timeinput.set(el.get());
+                        el.handleTimeInputChange();
+                    };
+                }(this)), 0);
+            });
 
             if (this.matches(":focus")) timeinput.fire("focus");
         },
@@ -58,7 +60,7 @@
                 hours = parts[0],
                 minutes = parts[1];
 
-            if (parts.length === 0) return timeinput.set("");
+            if (!parts.length) return timeinput.set("");
 
             if (hours < (ampmselect.length ? 13 : 24) && minutes < 60) {
                 timeinput.set(zeropad(ampmselect.get() === "PM" ? hours + 12 : hours) + ":" + zeropad(minutes));
@@ -67,24 +69,24 @@
                 parts = timeparts(timeinput.get());
                 hours = parts[0];
                 minutes = parts[1];
-
+                // select appropriate AM/PM
                 ampmselect.child((hours -= 12) > 0 ? 1 : Math.min(hours += 12, 0)).set("selected", true);
+                // update displayed AM/PM
                 ampmselect.next().set(ampmselect.get());
             }
 
             this.set(hours + ":" + zeropad(minutes));
         },
         handleTimeMeridianChange: function(ampmselect) {
+            // update displayed AM/PM
             ampmselect.next().set(ampmselect.get());
-
+            // adjust time in hidden input
             this.data(TIME_KEY).set(function(value) {
                 var parts = timeparts(value),
                     hours = parts[0],
                     minutes = parts[1];
 
-                hours += ampmselect.get() === "PM" ? 12 : -12;
-
-                return zeropad(hours) + ":" + zeropad(minutes);
+                return zeropad(ampmselect.get() === "PM" ? hours + 12 : hours - 12) + ":" + zeropad(minutes);
             });
         }
     });
