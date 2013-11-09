@@ -22,7 +22,7 @@
     DOM.extend("input[type=time]", "orientation" in window ? function() { this.addClass(COMPONENT_CLASS) } : {
         // polyfill timeinput for desktop browsers
         constructor: function() {
-            var timeinput = DOM.create("input[type=hidden]", {name: this.get("name"), value: this.get() }),
+            var timeinput = DOM.create("input[type=hidden]", { name: this.get("name") }),
                 ampmspan = AMPM ? DOM.create("span." + COMPONENT_CLASS + "-meridian>(select>option>{AM}^option>{PM})+span>{AM}") : DOM.mock(),
                 ampmselect = ampmspan.child(0);
 
@@ -34,19 +34,20 @@
                 .data(TIME_KEY, timeinput)
                 .data(AMPM_KEY, ampmselect)
                 .on("keydown", ["which", "shiftKey"], this.handleTimeInputKeydown)
-                .on("change", this.handleTimeInputChange)
-                .handleTimeInputChange();
+                .on("change", this.handleTimeInputChange);
 
             ampmselect.on("change", this, "handleTimeMeridianChange");
             // update value correctly on form reset
-            this.parent("form").on("reset", this, function() {
-                setTimeout((function(el) {
-                    return function() {
-                        timeinput.set(el.get());
-                        el.handleTimeInputChange();
-                    };
-                }(this)), 0);
-            });
+            this.parent("form").on("reset", this, "handleFormReset");
+            // dunno why defaultValue syncs with value for input[type=hidden]
+            timeinput.set(this.get()).data("defaultValue", this.get());
+
+            if (this.get()) {
+                this.handleTimeInputChange();
+                // update defaultValue with formatted time
+                this.set("defaultValue", this.get());
+                ampmselect.set("defaultValue", ampmselect.get());
+            }
 
             if (this.matches(":focus")) timeinput.fire("focus");
         },
@@ -88,6 +89,10 @@
 
                 return zeropad(ampmselect.get() === "PM" ? hours + 12 : hours - 12) + ":" + zeropad(minutes);
             });
+        },
+        handleFormReset: function() {
+            this.data(TIME_KEY).set(function() { return this.data("defaultValue") });
+            this.data(AMPM_KEY).each(function(el) { el.next().set(el.get("defaultValue")) });
         }
     });
 }(window.DOM));
