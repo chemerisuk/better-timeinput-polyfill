@@ -1,7 +1,7 @@
 (function(DOM, undefined) {
     "use strict";
 
-    var AMPM = DOM.find("html").get("lang") === "en-US",
+    var htmlEl = DOM.find("html"),
         TIME_KEY = "time-input",
         AMPM_KEY = "time-median",
         COMPONENT_CLASS = "better-timeinput",
@@ -17,13 +17,14 @@
 
             return str;
         },
-        zeropad = function(value) { return ("00" + value).slice(-2) };
+        zeropad = function(value) { return ("00" + value).slice(-2) },
+        ampm = function(pos, neg) { return htmlEl.get("lang") === "en-US" ? pos : neg };
 
     DOM.extend("input[type=time]", "orientation" in window ? function() { this.addClass(COMPONENT_CLASS) } : {
         // polyfill timeinput for desktop browsers
         constructor: function() {
             var timeinput = DOM.create("input[type=hidden]", { name: this.get("name") }),
-                ampmspan = AMPM ? DOM.create("span.${c}-meridian>(select>option>{AM}^option>{PM})+span>{AM}", {c: COMPONENT_CLASS}) : DOM.mock(),
+                ampmspan = DOM.create("span.${c}-meridian>(select>option>{AM}^option>{PM})+span>{AM}", {c: COMPONENT_CLASS}),
                 ampmselect = ampmspan.child(0);
 
             this
@@ -63,7 +64,7 @@
 
             if (!parts.length) return timeinput.set("");
 
-            if (hours < (ampmselect.length ? 13 : 24) && minutes < 60) {
+            if (hours < ampm(13, 24) && minutes < 60) {
                 timeinput.set(zeropad(ampmselect.get() === "PM" ? hours + 12 : hours) + ":" + zeropad(minutes));
             } else {
                 // restore previous valid
@@ -77,7 +78,7 @@
             }
 
             this.set(function() {
-                if (hours < (ampmselect.length ? 13 : 24) && minutes < 60) {
+                if (hours < ampm(13, 24) && minutes < 60) {
                     return hours + ":" + zeropad(minutes);
                 }
 
