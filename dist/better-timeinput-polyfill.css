@@ -1,19 +1,23 @@
 /**
- * @file better-timeinput-polyfill.css
- * @version 1.1.0-beta.1 2013-11-05T10:59:21
+ * @file src/better-timeinput-polyfill.css
+ * @version 1.1.0-rc.1 2013-11-23T22:03:54
  * @overview input[type=time] polyfill for better-dom
  * @copyright Maksim Chemerisuk 2013
  * @license MIT
  * @see https://github.com/chemerisuk/better-timeinput-polyfill
  */
 .better-timeinput {
-    width: 4em;
+    width: 5.5em;
     text-align: center;
 }
 
 .better-timeinput-meridian {
     width: 3em;
     position: relative;
+    display: none;
+}
+
+.better-timeinput-meridian:lang(en-US) {
     display: inline-block;
 }
 
