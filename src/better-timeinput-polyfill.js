@@ -76,7 +76,13 @@
                 ampmselect.next().set(ampmselect.get());
             }
 
-            this.set(hours + ":" + zeropad(minutes));
+            this.set(function() {
+                if (hours < (ampmselect.length ? 13 : 24) && minutes < 60) {
+                    return hours + ":" + zeropad(minutes);
+                }
+
+                return "";
+            });
         },
         handleTimeMeridianChange: function(ampmselect) {
             // update displayed AM/PM

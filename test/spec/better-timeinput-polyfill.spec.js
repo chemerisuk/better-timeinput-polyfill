@@ -25,4 +25,13 @@ describe("better-timeinput-polyfill", function() {
         checkKey(65, true, false);    // 'A'
         checkKey(90, true, false);    // 'Z'
     });
+
+    it("should revert previous valid value if current is not ok", function() {
+        el.handleTimeInputChange();
+        expect(el.get()).toBe("");
+
+        el.set("55:55");
+        el.handleTimeInputChange();
+        expect(el.get()).toBe("");
+    });
 });
