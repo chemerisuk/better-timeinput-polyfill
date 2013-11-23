@@ -23,7 +23,7 @@
     DOM.extend("input[type=time]", "orientation" in window ? function() { this.addClass(COMPONENT_CLASS) } : {
         // polyfill timeinput for desktop browsers
         constructor: function() {
-            var timeinput = DOM.create("input[type=hidden]", { name: this.get("name") }),
+            var timeinput = DOM.create("input[type=hidden name=${name}]", { name: this.get("name") }),
                 ampmspan = DOM.create("span.${c}-meridian>(select>option>{AM}^option>{PM})+span>{AM}", {c: COMPONENT_CLASS}),
                 ampmselect = ampmspan.child(0);
 
@@ -98,7 +98,7 @@
             });
         },
         handleFormReset: function() {
-            this.data(TIME_KEY).set(function(value, index, el) { return el.data("defaultValue") });
+            this.data(TIME_KEY).each(function(el) { el.set(el.data("defaultValue")) });
             this.data(AMPM_KEY).each(function(el) { el.next().set(el.get("defaultValue")) });
         }
     });
