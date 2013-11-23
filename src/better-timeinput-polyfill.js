@@ -23,7 +23,7 @@
         // polyfill timeinput for desktop browsers
         constructor: function() {
             var timeinput = DOM.create("input[type=hidden]", { name: this.get("name") }),
-                ampmspan = AMPM ? DOM.create("span." + COMPONENT_CLASS + "-meridian>(select>option>{AM}^option>{PM})+span>{AM}") : DOM.mock(),
+                ampmspan = AMPM ? DOM.create("span.${c}-meridian>(select>option>{AM}^option>{PM})+span>{AM}", {c: COMPONENT_CLASS}) : DOM.mock(),
                 ampmselect = ampmspan.child(0);
 
             this
@@ -33,7 +33,7 @@
                 .after(ampmspan, timeinput)
                 .data(TIME_KEY, timeinput)
                 .data(AMPM_KEY, ampmselect)
-                .on("keydown", ["which", "shiftKey"], this.handleTimeInputKeydown)
+                .on("keydown", this.handleTimeInputKeydown, ["which", "shiftKey"])
                 .on("change", this.handleTimeInputChange);
 
             ampmselect.on("change", this, "handleTimeMeridianChange");
@@ -91,7 +91,7 @@
             });
         },
         handleFormReset: function() {
-            this.data(TIME_KEY).set(function() { return this.data("defaultValue") });
+            this.data(TIME_KEY).set(function(value, index, el) { return el.data("defaultValue") });
             this.data(AMPM_KEY).each(function(el) { el.next().set(el.get("defaultValue")) });
         }
     });
