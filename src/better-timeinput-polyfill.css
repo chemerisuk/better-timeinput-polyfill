@@ -1,11 +1,15 @@
 .better-timeinput {
-    width: 4em;
+    width: 5.5em;
     text-align: center;
 }
 
 .better-timeinput-meridian {
     width: 3em;
     position: relative;
+    display: none;
+}
+
+.better-timeinput-meridian:lang(en-US) {
     display: inline-block;
 }
 

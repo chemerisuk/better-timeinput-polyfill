@@ -1,19 +1,19 @@
 {
-    "name": "better-timeinput-polyfill",
-    "version": "1.1.0-beta.1",
-    "main": [
-        "dist/better-timeinput-polyfill.js",
-        "dist/better-timeinput-polyfill.css"
-    ],
-    "ignore": [
-        ".*",
-        "src",
-        "test"
-    ],
-    "keywords": [
-        "better-dom"
-    ],
-    "dependencies": {
-        "better-dom": "~1.5.5"
-    }
+  "name": "better-timeinput-polyfill",
+  "version": "1.1.0-rc.1",
+  "main": [
+    "dist/better-timeinput-polyfill.js",
+    "dist/better-timeinput-polyfill.css"
+  ],
+  "ignore": [
+    ".*",
+    "src",
+    "test"
+  ],
+  "keywords": [
+    "better-dom"
+  ],
+  "dependencies": {
+    "better-dom": "~1.6.0"
+  }
 }

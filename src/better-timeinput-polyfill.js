@@ -1,7 +1,7 @@
 (function(DOM, undefined) {
     "use strict";
 
-    var AMPM = DOM.find("html").get("lang") === "en-US",
+    var htmlEl = DOM.find("html"),
         TIME_KEY = "time-input",
         AMPM_KEY = "time-median",
         COMPONENT_CLASS = "better-timeinput",
@@ -17,13 +17,14 @@
 
             return str;
         },
-        zeropad = function(value) { return ("00" + value).slice(-2) };
+        zeropad = function(value) { return ("00" + value).slice(-2) },
+        ampm = function(pos, neg) { return htmlEl.get("lang") === "en-US" ? pos : neg };
 
     DOM.extend("input[type=time]", "orientation" in window ? function() { this.addClass(COMPONENT_CLASS) } : {
         // polyfill timeinput for desktop browsers
         constructor: function() {
-            var timeinput = DOM.create("input[type=hidden]", {name: this.get("name"), value: this.get() }),
-                ampmspan = AMPM ? DOM.create("span." + COMPONENT_CLASS + "-meridian>(select>option>{AM}^option>{PM})+span>{AM}") : DOM.mock(),
+            var timeinput = DOM.create("input[type=hidden name=${name}]", { name: this.get("name") }),
+                ampmspan = DOM.create("span.${c}-meridian>(select>option>{AM}^option>{PM})+span>{AM}", {c: COMPONENT_CLASS}),
                 ampmselect = ampmspan.child(0);
 
             this
@@ -33,20 +34,21 @@
                 .after(ampmspan, timeinput)
                 .data(TIME_KEY, timeinput)
                 .data(AMPM_KEY, ampmselect)
-                .on("keydown", ["which", "shiftKey"], this.handleTimeInputKeydown)
-                .on("change", this.handleTimeInputChange)
-                .handleTimeInputChange();
+                .on("keydown", this.handleTimeInputKeydown, ["which", "shiftKey"])
+                .on("change", this.handleTimeInputChange);
 
             ampmselect.on("change", this, "handleTimeMeridianChange");
             // update value correctly on form reset
-            this.parent("form").on("reset", this, function() {
-                setTimeout((function(el) {
-                    return function() {
-                        timeinput.set(el.get());
-                        el.handleTimeInputChange();
-                    };
-                }(this)), 0);
-            });
+            this.parent("form").on("reset", this, "handleFormReset");
+            // dunno why defaultValue syncs with value for input[type=hidden]
+            timeinput.set(this.get()).data("defaultValue", this.get());
+
+            if (this.get()) {
+                this.handleTimeInputChange();
+                // update defaultValue with formatted time
+                this.set("defaultValue", this.get());
+                ampmselect.set("defaultValue", ampmselect.get());
+            }
 
             if (this.matches(":focus")) timeinput.fire("focus");
         },
@@ -62,7 +64,7 @@
 
             if (!parts.length) return timeinput.set("");
 
-            if (hours < (ampmselect.length ? 13 : 24) && minutes < 60) {
+            if (hours < ampm(13, 24) && minutes < 60) {
                 timeinput.set(zeropad(ampmselect.get() === "PM" ? hours + 12 : hours) + ":" + zeropad(minutes));
             } else {
                 // restore previous valid
@@ -75,7 +77,13 @@
                 ampmselect.next().set(ampmselect.get());
             }
 
-            this.set(hours + ":" + zeropad(minutes));
+            this.set(function() {
+                if (hours < ampm(13, 24) && minutes < 60) {
+                    return hours + ":" + zeropad(minutes);
+                }
+
+                return "";
+            });
         },
         handleTimeMeridianChange: function(ampmselect) {
             // update displayed AM/PM
@@ -88,6 +96,10 @@
 
                 return zeropad(ampmselect.get() === "PM" ? hours + 12 : hours - 12) + ":" + zeropad(minutes);
             });
+        },
+        handleFormReset: function() {
+            this.data(TIME_KEY).each(function(el) { el.set(el.data("defaultValue")) });
+            this.data(AMPM_KEY).each(function(el) { el.next().set(el.get("defaultValue")) });
         }
     });
 }(window.DOM));
