@@ -23,7 +23,7 @@
 
     DOM.extend("input[type=time]", {
         constructor: function() {
-            var timeinput = DOM.create("input[type=hidden name=${n}]", { n: this.get("name") }),
+            var timeinput = DOM.create("input[type=hidden name=${n}]", {n: this.get("name")}),
                 ampmspan = DOM.create("span.${c}-meridian>(select>option>{AM}^option>{PM})+span>{AM}", {c: COMPONENT_CLASS}),
                 ampmselect = ampmspan.child(0);
 
@@ -40,15 +40,32 @@
             ampmselect.on("change", this, this.onMeridianChange);
             // update value correctly on form reset
             this.parent("form").on("reset", this, this.onFormReset);
-            // have to use data for input[type=hidden] instead of setting defaultValue
-            timeinput.set(this.get()).data("defaultValue", this.get());
+            // patch set method to update visible input as well
+            timeinput.set = (function(el, setter) {
+                return function() {
+                    setter.apply(timeinput, arguments);
 
-            if (this.get()) {
-                this.onChange();
-                // update defaultValue with formatted time
-                this.set("defaultValue", this.get());
-                ampmselect.next().data("defaultValue", ampmselect.get());
-            }
+                    if (arguments.length === 1) {
+                        var parts = timeparts(timeinput.get()),
+                            hours = parts[0],
+                            minutes = parts[1];
+                        // select appropriate AM/PM
+                        ampmselect.child((hours -= 12) > 0 ? 1 : Math.min(hours += 12, 0)).set("selected", true);
+                        // update displayed AM/PM
+                        ampmselect.next().set(ampmselect.get());
+                        // update visible input value
+                        el.set(hours < ampm(13, 24) && minutes < 60 ? hours + ":" + zeropad(minutes) : "");
+                    }
+
+                    return this;
+                };
+            }(this, timeinput.set));
+
+            // update hidden input value and refresh all visible controls
+            timeinput.set(this.get()).data("defaultValue", timeinput.get());
+            // update default values to be formatted
+            this.set("defaultValue", this.get());
+            ampmselect.next().data("defaultValue", ampmselect.get());
 
             if (this.matches(":focus")) timeinput.fire("focus");
         },
@@ -60,26 +77,18 @@
                 timeinput = this.data(TIMEINPUT_KEY),
                 parts = timeparts(this.get()),
                 hours = parts[0],
-                minutes = parts[1];
-
-            if (!parts.length) return timeinput.set("");
+                minutes = parts[1],
+                value = "";
 
             if (hours < ampm(13, 24) && minutes < 60) {
-                timeinput.set(zeropad(ampmselect.get() === "PM" ? hours + 12 : hours) + ":" + zeropad(minutes));
-            } else {
-                // restore previous valid
-                parts = timeparts(timeinput.get());
-                hours = parts[0];
-                minutes = parts[1];
-                // select appropriate AM/PM
-                ampmselect.child((hours -= 12) > 0 ? 1 : Math.min(hours += 12, 0)).set("selected", true);
-                // update displayed AM/PM
-                ampmselect.next().set(ampmselect.get());
+                // refresh hidden input with new value
+                value = zeropad(ampmselect.get() === "PM" ? hours + 12 : hours) + ":" + zeropad(minutes);
+            } else if (parts.length === 2) {
+                // restore previous valid value
+                value = timeinput.get();
             }
 
-            this.set(function() {
-                return hours < ampm(13, 24) && minutes < 60 ? hours + ":" + zeropad(minutes) : "";
-            });
+            timeinput.set(value);
         },
         onMeridianChange: function(ampmselect) {
             // update displayed AM/PM
