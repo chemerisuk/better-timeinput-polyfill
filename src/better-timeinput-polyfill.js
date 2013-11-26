@@ -17,9 +17,12 @@
 
             return str;
         },
+        defaultValue = function(el) { return el.data("defaultValue") },
         zeropad = function(value) { return ("00" + value).slice(-2) },
         ampm = function(pos, neg) { return htmlEl.get("lang") === "en-US" ? pos : neg },
-        defaultValue = function(el) { return el.data("defaultValue") };
+        formatISOTime = function(hours, minutes, ampm) {
+            return zeropad(ampm === "PM" ? hours + 12 : hours) + ":" + zeropad(minutes);
+        };
 
     DOM.extend("input[type=time]", {
         constructor: function() {
@@ -53,7 +56,7 @@
                         ampmselect.child((hours -= 12) > 0 ? 1 : Math.min(hours += 12, 0)).set("selected", true);
                         // update displayed AM/PM
                         ampmselect.next().set(ampmselect.get());
-                        // update visible input value
+                        // update visible input value, need to add zero padding to minutes
                         el.set(hours < ampm(13, 24) && minutes < 60 ? hours + ":" + zeropad(minutes) : "");
                     }
 
@@ -73,8 +76,7 @@
             return which === 186 && shiftKey || which < 58;
         },
         onChange: function() {
-            var ampmselect = this.data(MERIDIAN_KEY),
-                timeinput = this.data(TIMEINPUT_KEY),
+            var timeinput = this.data(TIMEINPUT_KEY),
                 parts = timeparts(this.get()),
                 hours = parts[0],
                 minutes = parts[1],
@@ -82,7 +84,7 @@
 
             if (hours < ampm(13, 24) && minutes < 60) {
                 // refresh hidden input with new value
-                value = zeropad(ampmselect.get() === "PM" ? hours + 12 : hours) + ":" + zeropad(minutes);
+                value = formatISOTime(hours, minutes, this.data(MERIDIAN_KEY).get());
             } else if (parts.length === 2) {
                 // restore previous valid value
                 value = timeinput.get();
@@ -99,7 +101,9 @@
                     hours = parts[0],
                     minutes = parts[1];
 
-                return zeropad(ampmselect.get() === "PM" ? hours + 12 : hours - 12) + ":" + zeropad(minutes);
+                if (ampmselect.get() === "AM") hours -= 12;
+
+                return formatISOTime(hours, minutes, ampmselect.get());
             });
         },
         onFormReset: function() {
