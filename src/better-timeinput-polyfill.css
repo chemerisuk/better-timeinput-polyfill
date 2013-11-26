@@ -1,4 +1,4 @@
-.better-timeinput {
+.better-timeinput, input[type=time] {
     width: 5.5em;
     text-align: center;
 }

@@ -9,7 +9,7 @@ describe("better-timeinput-polyfill", function() {
 
     it("should block input of all chars except numbers and controls", function() {
         function checkKey(key, shiftKey, expected) {
-            expect(el.handleTimeInputKeydown(key, shiftKey)).toBe(expected);
+            expect(el.onKeydown(key, shiftKey)).toBe(expected);
         }
 
         checkKey(9,  false, true);    // tab
@@ -27,19 +27,19 @@ describe("better-timeinput-polyfill", function() {
     });
 
     it("should revert previous valid value if current is not ok", function() {
-        el.handleTimeInputChange();
+        el.onChange();
         expect(el.get()).toBe("");
 
         el.set("55:55");
-        el.handleTimeInputChange();
+        el.onChange();
         expect(el.get()).toBe("");
 
         el.set("12:12");
-        el.handleTimeInputChange();
+        el.onChange();
         expect(el.get()).toBe("12:12");
 
         el.set("55:55");
-        el.handleTimeInputChange();
+        el.onChange();
         expect(el.get()).toBe("12:12");
     });
 
@@ -48,9 +48,9 @@ describe("better-timeinput-polyfill", function() {
             timemedian = el.data("time-median");
 
         timeinput.data("defaultValue", "111").set("123");
-        timemedian.set("defaultValue", "222").next().set("321");
+        timemedian.next().data("defaultValue", "222").next().set("321");
 
-        el.handleFormReset();
+        el.onFormReset();
 
         expect(timeinput.get()).toBe("111");
         expect(timemedian.next().get()).toBe("222");

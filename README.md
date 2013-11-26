@@ -3,6 +3,14 @@
 
 [LIVE DEMO](http://chemerisuk.github.io/better-timeinput-polyfill/)
 
+## Features
+* does nothing on mobile browsers and normalizes the widget for desktop browsers
+* [living extension](https://github.com/chemerisuk/better-dom/wiki/Living-extensions) - no init calls are required for a new content
+* supports US variant of time with AM/PM selectbox (just use `lang="en-US"` on `<html>`)
+* fully customizable via css classes
+* restores initial value on parent form reset
+* allows to set value programmatically, but the string should be in ISO (HH:mm) format
+
 ## Installing
 Use [bower](http://bower.io/) to download this extension with all required dependencies.
 

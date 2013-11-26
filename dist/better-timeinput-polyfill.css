@@ -1,12 +1,12 @@
 /**
  * @file src/better-timeinput-polyfill.css
- * @version 1.1.0-rc.1 2013-11-23T22:03:54
+ * @version 1.1.0-rc.2 2013-11-26T17:53:20
  * @overview input[type=time] polyfill for better-dom
  * @copyright Maksim Chemerisuk 2013
  * @license MIT
  * @see https://github.com/chemerisuk/better-timeinput-polyfill
  */
-.better-timeinput {
+.better-timeinput, input[type=time] {
     width: 5.5em;
     text-align: center;
 }
