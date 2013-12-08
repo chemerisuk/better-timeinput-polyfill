@@ -1,6 +1,6 @@
 /**
  * @file src/better-timeinput-polyfill.js
- * @version 1.1.0-rc.2 2013-11-26T17:53:20
+ * @version 1.1.0 2013-12-08T03:37:15
  * @overview input[type=time] polyfill for better-dom
  * @copyright Maksim Chemerisuk 2013
  * @license MIT
@@ -52,26 +52,7 @@
             // update value correctly on form reset
             this.parent("form").on("reset", this, this.onFormReset);
             // patch set method to update visible input as well
-            timeinput.set = (function(el, setter) {
-                return function() {
-                    setter.apply(timeinput, arguments);
-
-                    if (arguments.length === 1) {
-                        var parts = timeparts(timeinput.get()),
-                            hours = parts[0],
-                            minutes = parts[1];
-                        // select appropriate AM/PM
-                        ampmselect.child((hours -= 12) > 0 ? 1 : Math.min(hours += 12, 0)).set("selected", true);
-                        // update displayed AM/PM
-                        ampmselect.next().set(ampmselect.get());
-                        // update visible input value, need to add zero padding to minutes
-                        el.set(hours < ampm(13, 24) && minutes < 60 ? hours + ":" + zeropad(minutes) : "");
-                    }
-
-                    return this;
-                };
-            }(this, timeinput.set));
-
+            timeinput.set = this.onValueChanged.bind(this, timeinput.set);
             // update hidden input value and refresh all visible controls
             timeinput.set(this.get()).data("defaultValue", timeinput.get());
             // update default values to be formatted
@@ -79,6 +60,27 @@
             ampmselect.next().data("defaultValue", ampmselect.get());
 
             if (this.matches(":focus")) timeinput.fire("focus");
+        },
+        onValueChanged: function(setter) {
+            var timeinput = this.data(TIMEINPUT_KEY),
+                ampmselect = this.data(MERIDIAN_KEY),
+                parts, hours, minutes;
+
+            setter.apply(timeinput, Array.prototype.slice.call(arguments, 1));
+
+            if (arguments.length === 2) {
+                parts = timeparts(timeinput.get());
+                hours = parts[0];
+                minutes = parts[1];
+                // select appropriate AM/PM
+                ampmselect.child((hours -= 12) > 0 ? 1 : Math.min(hours += 12, 0)).set("selected", true);
+                // update displayed AM/PM
+                ampmselect.next().set(ampmselect.get());
+                // update visible input value, need to add zero padding to minutes
+                this.set(hours < ampm(13, 24) && minutes < 60 ? hours + ":" + zeropad(minutes) : "");
+            }
+
+            return timeinput;
         },
         onKeydown: function(which, shiftKey) {
             return which === 186 && shiftKey || which < 58;
