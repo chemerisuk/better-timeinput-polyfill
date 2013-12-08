@@ -5,7 +5,7 @@
 
 ## Features
 * does nothing on mobile browsers and normalizes the widget for desktop browsers
-* [living extension](https://github.com/chemerisuk/better-dom/wiki/Living-extensions) - no init calls are required for a new content
+* [live extension](https://github.com/chemerisuk/better-dom/wiki/Live-extensions) - works for current and future content
 * supports US variant of time with AM/PM selectbox (just use `lang="en-US"` on `<html>`)
 * fully customizable via css classes
 * restores initial value on parent form reset
@@ -26,8 +26,8 @@ Then append the following html elements on your page:
     ...
     <link href="bower_components/better-timeinput-polyfill/dist/better-timeinput-polyfill.css" rel="stylesheet"/>
     <!--[if IE]>
-        <link href="bower_components/better-dom/dist/better-dom.htc" rel="htc" />
-        <script src="bower_components/html5shiv/dist/html5shiv.js"></script>
+        <link href="bower_components/better-dom/dist/better-dom-legacy.htc" rel="htc"/>
+        <script src="bower_components/better-dom/dist/better-dom-legacy.js"></script>
     <![endif]-->
 </head>
 <body>
@@ -40,7 +40,7 @@ Then append the following html elements on your page:
 
 ## Browser support
 * Chrome
-* Safari 4+
+* Safari 6.0+
 * Firefox 16+
 * Opera 12.10+
 * IE8+
