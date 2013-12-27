@@ -1,4 +1,4 @@
-(function(DOM, TIMEINPUT_KEY, MERIDIAN_KEY, COMPONENT_CLASS) {
+(function(DOM, COMPONENT_CLASS) {
     "use strict";
 
     if ("orientation" in window) return; // skip mobile/tablet browsers
@@ -17,7 +17,6 @@
 
             return str;
         },
-        defaultValue = function(el) { return el.data("defaultValue") },
         zeropad = function(value) { return ("00" + value).slice(-2) },
         ampm = function(pos, neg) { return htmlEl.get("lang") === "en-US" ? pos : neg },
         formatISOTime = function(hours, minutes, ampm) {
@@ -26,7 +25,7 @@
 
     DOM.extend("input[type=time]", {
         constructor: function() {
-            var timeinput = DOM.create("input[type=hidden name=${n}]", {n: this.get("name")}),
+            var timeinput = DOM.create("input[type=hidden name=${name}]", {name: this.get("name")}),
                 ampmspan = DOM.create("span.${c}-meridian>(select>option>{AM}^option>{PM})+span>{AM}", {c: COMPONENT_CLASS}),
                 ampmselect = ampmspan.child(0);
 
@@ -34,17 +33,15 @@
                 // drop native implementation and clear name attribute
                 .set({type: "text", maxlength: 5, name: null})
                 .addClass(COMPONENT_CLASS)
-                .after(ampmspan, timeinput)
-                .data(TIMEINPUT_KEY, timeinput)
-                .data(MERIDIAN_KEY, ampmselect)
-                .on("change", this.onChange)
-                .on("keydown", this.onKeydown, ["which", "shiftKey"]);
+                .on("change", this.onChange.bind(this, timeinput, ampmselect))
+                .on("keydown", this.onKeydown, ["which", "shiftKey"])
+                .after(ampmspan, timeinput);
 
-            ampmselect.on("change", this, this.onMeridianChange);
+            ampmselect.on("change", this.onMeridianChange.bind(this, timeinput, ampmselect));
             // update value correctly on form reset
-            this.parent("form").on("reset", this, this.onFormReset);
+            this.parent("form").on("reset", this.onFormReset.bind(this, timeinput, ampmselect));
             // patch set method to update visible input as well
-            timeinput.set = this.onValueChanged.bind(this, timeinput.set);
+            timeinput.set = this.onValueChanged.bind(this, timeinput.set, timeinput, ampmselect);
             // update hidden input value and refresh all visible controls
             timeinput.set(this.get()).data("defaultValue", timeinput.get());
             // update default values to be formatted
@@ -53,14 +50,12 @@
 
             if (this.matches(":focus")) timeinput.fire("focus");
         },
-        onValueChanged: function(setter) {
-            var timeinput = this.data(TIMEINPUT_KEY),
-                ampmselect = this.data(MERIDIAN_KEY),
-                parts, hours, minutes;
+        onValueChanged: function(setter, timeinput, ampmselect) {
+            var parts, hours, minutes;
 
-            setter.apply(timeinput, Array.prototype.slice.call(arguments, 1));
+            setter.apply(timeinput, Array.prototype.slice.call(arguments, 3));
 
-            if (arguments.length === 2) {
+            if (arguments.length === 4) {
                 parts = timeparts(timeinput.get());
                 hours = parts[0];
                 minutes = parts[1];
@@ -77,16 +72,15 @@
         onKeydown: function(which, shiftKey) {
             return which === 186 && shiftKey || which < 58;
         },
-        onChange: function() {
-            var timeinput = this.data(TIMEINPUT_KEY),
-                parts = timeparts(this.get()),
+        onChange: function(timeinput, ampmselect) {
+            var parts = timeparts(this.get()),
                 hours = parts[0],
                 minutes = parts[1],
                 value = "";
 
             if (hours < ampm(13, 24) && minutes < 60) {
                 // refresh hidden input with new value
-                value = formatISOTime(hours, minutes, this.data(MERIDIAN_KEY).get());
+                value = formatISOTime(hours, minutes, ampmselect.get());
             } else if (parts.length === 2) {
                 // restore previous valid value
                 value = timeinput.get();
@@ -94,11 +88,11 @@
 
             timeinput.set(value);
         },
-        onMeridianChange: function(ampmselect) {
+        onMeridianChange: function(timeinput, ampmselect) {
             // update displayed AM/PM
             ampmselect.next().set(ampmselect.get());
             // adjust time in hidden input
-            this.data(TIMEINPUT_KEY).set(function(el) {
+            timeinput.set(function(el) {
                 var parts = timeparts(el.get()),
                     hours = parts[0],
                     minutes = parts[1];
@@ -108,9 +102,9 @@
                 return formatISOTime(hours, minutes, ampmselect.get());
             });
         },
-        onFormReset: function() {
-            this.data(TIMEINPUT_KEY).set(defaultValue);
-            this.data(MERIDIAN_KEY).next().set(defaultValue);
+        onFormReset: function(timeinput, ampmselect) {
+            timeinput.set(timeinput.data("defaultValue"));
+            ampmselect.next().set(ampmselect.data("defaultValue"));
         }
     });
-}(window.DOM, "time-input", "time-median", "better-timeinput"));
+}(window.DOM, "better-timeinput"));

@@ -1,10 +1,12 @@
 describe("better-timeinput-polyfill", function() {
     "use strict";
 
-    var el;
+    var el, timeinput, ampmselect;
 
     beforeEach(function() {
         el = DOM.mock("form>input[type=time]").find("input");
+        timeinput = DOM.mock();
+        ampmselect = DOM.mock();
     });
 
     it("should block input of all chars except numbers and controls", function() {
@@ -27,32 +29,29 @@ describe("better-timeinput-polyfill", function() {
     });
 
     it("should revert previous valid value if current is not ok", function() {
-        el.onChange();
-        expect(el.get()).toBe("");
+        var spy = spyOn(timeinput, "set");
+
+        spyOn(timeinput, "get").andReturn("12:12");
+
+        el.set("10:10");
+        el.onChange(timeinput, ampmselect);
+        expect(spy).toHaveBeenCalledWith("10:10");
 
         el.set("55:55");
-        el.onChange();
-        expect(el.get()).toBe("");
-
-        el.set("12:12");
-        el.onChange();
-        expect(el.get()).toBe("12:12");
-
-        el.set("55:55");
-        el.onChange();
-        expect(el.get()).toBe("12:12");
+        el.onChange(timeinput, ampmselect);
+        expect(spy).toHaveBeenCalledWith("12:12");
     });
 
     it("should reset controls on form reset", function() {
-        var timeinput = el.data("time-input"),
-            timemedian = el.data("time-median");
+        var timeinputSpy = spyOn(timeinput, "set")/*,
+            ampmselectSpy = spyOn(ampmselect, "set")*/;
 
-        timeinput.data("defaultValue", "111").set("123");
-        timemedian.next().data("defaultValue", "222").next().set("321");
+        spyOn(timeinput, "data").andReturn("123");
+        // spyOn(ampmselect, "data").andReturn("321");
 
-        el.onFormReset();
+        el.onFormReset(timeinput, ampmselect);
 
-        expect(timeinput.get()).toBe("111");
-        expect(timemedian.next().get()).toBe("222");
+        expect(timeinputSpy).toHaveBeenCalledWith("123");
+        // expect(ampmselectSpy).toHaveBeenCalledWith("321");
     });
 });
